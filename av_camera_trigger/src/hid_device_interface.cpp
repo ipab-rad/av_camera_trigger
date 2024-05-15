@@ -131,7 +131,7 @@ void HIDDevice::writeToDevice(const std::vector<uint8_t>& buf)
         //Error, device isn't connected anymore.
         disconnect();
         throw except::BrokenChannel{"Could not write " + std::to_string(buf.size()) +
-                                    " bytes to the HID. Device diconnected?"};
+                                    " bytes to the HID. Device disconnected?"};
     }
 }
 
@@ -177,9 +177,7 @@ void HIDDevice::queryDevice(message::Query query, std::vector<uint8_t>& result,
         }
     }
 
-    throw except::BrokenChannel{"Firmware did not repond to query " + message::toString(query) +
+    throw except::BrokenChannel{"Firmware did not respond to query " + message::toString(query) +
                                 " even after " + std::to_string(MESSAGE_ATTEMPTS) + " attempts, each taking " +
                                 std::to_string(TIMEOUT.count()) + " ms"};
 }
-
-

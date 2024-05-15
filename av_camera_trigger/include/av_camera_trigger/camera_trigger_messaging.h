@@ -162,6 +162,3 @@ namespace message
     const std::string STATE_ERROR="Error";
 
 } //namespace Message
-
-
-

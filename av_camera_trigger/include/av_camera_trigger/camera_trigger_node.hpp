@@ -149,7 +149,7 @@ class CameraTriggerNode : public rclcpp::Node
     // message::PpsStatus m_lastPpsStatus;
     // std::chrono::nanoseconds m_lastFwHostClockOffset;
 
-    
+
     IDevice::SharedPtr           m_triggerDevice;
     // rclcpp::Duration m_offset;
     // std::mutex                   m_diagnosticsMutex;
@@ -159,4 +159,3 @@ class CameraTriggerNode : public rclcpp::Node
     std::string    m_firmwareLogFilePath;
     // FirmwareLogger m_firmwareLogger;
 };
-

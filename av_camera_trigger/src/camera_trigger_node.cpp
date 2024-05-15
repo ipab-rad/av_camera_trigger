@@ -30,7 +30,7 @@ void CameraTriggerNode::attachCameras()
     int camera_portnumber = 0;
     std::string camera_alias = "RSPR_L";
     m_triggerDevice->attachCamera(camera_framerate, camera_portnumber, camera_alias);
-    RCLCPP_INFO_STREAM(this->get_logger(),  
+    RCLCPP_INFO_STREAM(this->get_logger(),
         "Camera identified by alias " << camera_alias <<
         " on connector " << camera_portnumber << " has been attached");
     // for (const auto& camera : getAttachedCameras())
@@ -48,16 +48,16 @@ void CameraTriggerNode::attachCameras()
 
 bool CameraTriggerNode::connectToFirmware()
 {
-    RCLCPP_INFO(this->get_logger(), "Attempting to connect to firmware");       
+    RCLCPP_INFO(this->get_logger(), "Attempting to connect to firmware");
     std::future<bool> result = std::async(std::launch::async, [this]{return m_triggerDevice->connect();});
 
     const auto connected = result.get();
 
     if (connected)
     {
-        RCLCPP_INFO(this->get_logger(), "Connection with the firmware established");            
+        RCLCPP_INFO(this->get_logger(), "Connection with the firmware established");
     }
-    else 
+    else
     {
         RCLCPP_ERROR(this->get_logger(), "Couldn't connect to the firmware");
 

@@ -1,13 +1,13 @@
 #!/bin/bash
 # ----------------------------------------------------------------
-# Build docker dev stage and add local code for live development 
+# Build docker dev stage and add local code for live development
 # ----------------------------------------------------------------
 
 
 # Build docker image up to dev stage
 DOCKER_BUILDKIT=1 docker build \
--t av_camera_trigger \
--f Dockerfile --target dev .
+    -t av_camera_trigger \
+    -f Dockerfile --target dev .
 
 # Run docker image with local code volumes for development
 docker run -it --rm --net host --privileged \

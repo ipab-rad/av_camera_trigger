@@ -170,7 +170,7 @@ void IDevice::stopCameras()
 
 void IDevice::persistParameter(const std::string& cmd)
 {
-    RCLCPP_DEBUG_STREAM(rclcpp::get_logger("device_interface"), "Sending parameter persistance request to the firmware..." << cmd);
+    RCLCPP_DEBUG_STREAM(rclcpp::get_logger("device_interface"), "Sending parameter persistence request to the firmware..." << cmd);
     std::vector<uint8_t> args;
     args.push_back(cmd.size());
     std::copy(cmd.begin(), cmd.end(), std::back_inserter(args));

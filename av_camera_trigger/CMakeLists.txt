@@ -16,21 +16,14 @@ find_package(camera_trigger_msgs REQUIRED)
 
 include_directories(include)
 
-add_executable(camera_trigger_node 
-    src/main.cpp
-    src/camera_trigger_node.cpp
-    src/device_interface.cpp
-    src/hid_device_interface.cpp)
+add_executable(
+  camera_trigger_node src/main.cpp src/camera_trigger_node.cpp
+                      src/device_interface.cpp src/hid_device_interface.cpp)
 
-target_link_libraries(camera_trigger_node
-    hidapi-libusb
-    ${rclcpp_LIBRARIES}
-)
+target_link_libraries(camera_trigger_node hidapi-libusb ${rclcpp_LIBRARIES})
 
 ament_target_dependencies(camera_trigger_node rclcpp camera_trigger_msgs)
 
-install(TARGETS
-  camera_trigger_node
-  DESTINATION lib/${PROJECT_NAME})
+install(TARGETS camera_trigger_node DESTINATION lib/${PROJECT_NAME})
 
 ament_package()
