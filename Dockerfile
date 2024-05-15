@@ -11,7 +11,8 @@ RUN sed -i "s/$OLD_MIRROR\|$SEC_MIRROR/$NEW_MIRROR/g" /etc/apt/sources.list
 RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive \
         apt-get -y --quiet --no-install-recommends install \
-        # TODO \
+        libhidapi-dev \
+        libboost-all-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Setup ROS workspace folder
@@ -22,8 +23,9 @@ WORKDIR $ROS_WS
 
 FROM base AS prebuilt
 
-# Bring launch pkg into the docker image
+# Bring source code into docker image
 COPY av_camera_trigger $ROS_WS/src/av_camera_trigger
+COPY camera_trigger_msgs $ROS_WS/src/camera_trigger_msgs
 
 # Source ROS setup for dependencies and build our code
 RUN . /opt/ros/"$ROS_DISTRO"/setup.sh \
@@ -68,4 +70,4 @@ RUN sed --in-place --expression \
       /ros_entrypoint.sh
 
 # launch ros package
-CMD ["ros2", "launch", "av_camera_trigger_launch", "av_camera_trigger_launch.launch.xml"]
+CMD ["ros2", "run", "av_camera_trigger", "camera_trigger_node"]

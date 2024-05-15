@@ -6,14 +6,14 @@
 #include "rclcpp/rclcpp.hpp"
 
 // #include "FirmwareLogger.hpp"
-// #include "camera_trigger_msgs/trigger.h"
+#include "camera_trigger_msgs/msg/trigger.hpp"
 #include "av_camera_trigger/device_interface.hpp"
 #include "av_camera_trigger/hid_device_interface.hpp"
 
 #include <chrono>
 #include <type_traits>
 
-// #include <boost/range/adaptor/filtered.hpp>
+#include <boost/range/adaptor/filtered.hpp>
 
 enum class ErrorCode
 {
@@ -81,12 +81,12 @@ class CameraTriggerNode : public rclcpp::Node
 
     // std::string getNodeVersion() override;
     // static rclcpp::Time getTimeNow();
-    // void loadParams();
+    void loadParams();
     // void makeCameraBonds();
     // void initialiseDiags();
     bool connectToFirmware();
     // void checkVersion();
-    // void checkFirmwareConfiguration() const;
+    void checkFirmwareConfiguration() const;
     void attachCameras();
     void printTimeOffset();
 
@@ -104,34 +104,25 @@ class CameraTriggerNode : public rclcpp::Node
 
     // void monitorCameraInfoRetrievalFrequency() const;
 
+    struct IsAttached
+    {
+        bool operator()(const CameraParams& camera) const
+        {
+            return camera.attached;
+        }
+    };
 
-    // template <typename T>
-    // void checkParameter(const std::string& name, const T& defaultValue) const;
-    // template <typename Rep, typename Period>
-    // void checkParameter(const std::string& name,
-    //                     const std::chrono::duration<Rep, Period>& defaultValue) const;
-    // template <typename T>
-    // void checkAndReport(const std::string& name, const T& expected, const T& actual) const;
+    boost::filtered_range<IsAttached, const CameraContainer>
+    getAttachedCameras() const
+    {
+        return boost::adaptors::filter(m_cameras, IsAttached{});
+    }
 
-    // struct IsAttached
-    // {
-    //     bool operator()(const CameraParams& camera) const
-    //     {
-    //         return camera.attached;
-    //     }
-    // };
-
-    // boost::filtered_range<IsAttached, const CameraContainer>
-    // getAttachedCameras() const
-    // {
-    //     return boost::adaptors::filter(m_cameras, IsAttached{});
-    // }
-
-    // boost::filtered_range<IsAttached, CameraContainer>
-    // getAttachedCameras()
-    // {
-    //     return boost::adaptors::filter(m_cameras, IsAttached{});
-    // }
+    boost::filtered_range<IsAttached, CameraContainer>
+    getAttachedCameras()
+    {
+        return boost::adaptors::filter(m_cameras, IsAttached{});
+    }
 
     // void forEachAttachedCamera(std::function<void(const CameraParams&, std::size_t diagIndex)> action);
 
@@ -148,14 +139,13 @@ class CameraTriggerNode : public rclcpp::Node
 
     // void safeCall(std::function<void()> call);
 
-  private:
     // std::vector<CameraBond>             m_cameraBonds;
     // std::vector<camera_vals>    m_lastCameraInfo;
 
-    // CameraContainer    m_cameras;
-    // bool               m_applyTimeCorrection;
-    // int                m_frameRate;
-    // bool               m_monitorTimeOffset;
+    CameraContainer    m_cameras;
+    bool               m_applyTimeCorrection;
+    int                m_frameRate;
+    bool               m_monitorTimeOffset;
     // message::PpsStatus m_lastPpsStatus;
     // std::chrono::nanoseconds m_lastFwHostClockOffset;
 
@@ -163,10 +153,10 @@ class CameraTriggerNode : public rclcpp::Node
     IDevice::SharedPtr           m_triggerDevice;
     // rclcpp::Duration m_offset;
     // std::mutex                   m_diagnosticsMutex;
-    // std::chrono::milliseconds    m_maxFirmwareQueryPeriod;
+    std::chrono::milliseconds    m_maxFirmwareQueryPeriod;
 
-    // std::string    m_firmwareSerialDevice;
-    // std::string    m_firmwareLogFilePath;
+    std::string    m_firmwareSerialDevice;
+    std::string    m_firmwareLogFilePath;
     // FirmwareLogger m_firmwareLogger;
 };
 

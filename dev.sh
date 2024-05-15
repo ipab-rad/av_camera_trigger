@@ -13,4 +13,5 @@ DOCKER_BUILDKIT=1 docker build \
 docker run -it --rm --net host --privileged \
     -v /dev/shm:/dev/shm \
     -v ./av_camera_trigger:/opt/ros_ws/src/av_camera_trigger \
+    -v ./camera_trigger_msgs:/opt/ros_ws/src/camera_trigger_msgs \
     av_camera_trigger

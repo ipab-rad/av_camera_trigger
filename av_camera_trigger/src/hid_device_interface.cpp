@@ -42,7 +42,7 @@ bool HIDDevice::connect()
         return true;
     }
 
-    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"), "Connecting to HID device identified by " <<
+    RCLCPP_INFO_STREAM(rclcpp::get_logger("hid_device_interface"), "Connecting to HID device identified by " <<
                     "vendor id " << std::hex << m_vendor_id << " and " <<
                     "product id " << std::hex << m_product_id
                     << std::dec);

@@ -10,7 +10,7 @@
 
 void IDevice::setDeviceTime(time_t seconds)
 {
-    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"), "Sending set device time (" << std::to_string(seconds) << " sec) request to the firmware...");
+    RCLCPP_INFO_STREAM(rclcpp::get_logger("device_interface"), "Sending set device time (" << std::to_string(seconds) << " sec) request to the firmware...");
     std::vector<uint8_t> args(4);
 
     args[0] = seconds & 0xff;
@@ -25,7 +25,7 @@ void IDevice::setDeviceTime(time_t seconds)
 
 std::chrono::nanoseconds IDevice::getDeviceTime()
 {
-    RCLCPP_DEBUG_STREAM(rclcpp::get_logger("rclcpp"), "Sending get device time request to the firmware...");
+    RCLCPP_DEBUG_STREAM(rclcpp::get_logger("device_interface"), "Sending get device time request to the firmware...");
     std::vector<uint8_t> result(message::reportLength);
 
     queryDevice(message::Query::GetDeviceTime, result);
@@ -142,7 +142,7 @@ std::vector<camera_vals> IDevice::getCameraInfo()
 
 void IDevice::attachCamera(uint8_t framerate, uint8_t port, const std::string& alias)
 {
-    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"), "Sending attach camera " << alias << " request to the firmware...");
+    RCLCPP_INFO_STREAM(rclcpp::get_logger("device_interface"), "Sending attach camera " << alias << " request to the firmware...");
     std::vector<uint8_t> args = {framerate, port};
     // truncate the string to MAX_CHAR_COUNT_CAMERA_ALIAS chars
     const auto charCount = std::min(alias.size(), static_cast<std::size_t>(constants::MAX_CHAR_COUNT_CAMERA_ALIAS));
@@ -170,7 +170,7 @@ void IDevice::stopCameras()
 
 void IDevice::persistParameter(const std::string& cmd)
 {
-    RCLCPP_DEBUG_STREAM(rclcpp::get_logger("rclcpp"), "Sending parameter persistance request to the firmware..." << cmd);
+    RCLCPP_DEBUG_STREAM(rclcpp::get_logger("device_interface"), "Sending parameter persistance request to the firmware..." << cmd);
     std::vector<uint8_t> args;
     args.push_back(cmd.size());
     std::copy(cmd.begin(), cmd.end(), std::back_inserter(args));
@@ -182,7 +182,7 @@ void IDevice::persistParameter(const std::string& cmd)
 
 std::string IDevice::retrieveParameter(const std::string& name)
 {
-    RCLCPP_DEBUG_STREAM(rclcpp::get_logger("rclcpp"), "Sending parameter " << name << " retrieval request to the firmware...");
+    RCLCPP_DEBUG_STREAM(rclcpp::get_logger("device_interface"), "Sending parameter " << name << " retrieval request to the firmware...");
     std::vector<uint8_t> args;
     args.push_back(name.size());
     std::copy(name.begin(), name.end(), std::back_inserter(args));
@@ -199,7 +199,7 @@ std::string IDevice::retrieveParameter(const std::string& name)
 
 version IDevice::getVersion()
 {
-    RCLCPP_DEBUG_STREAM(rclcpp::get_logger("rclcpp"), "Sending version request to the firmware");
+    RCLCPP_DEBUG_STREAM(rclcpp::get_logger("device_interface"), "Sending version request to the firmware");
     std::vector<uint8_t> result(message::reportLength);
 
     queryDevice(message::Query::GetVersion, result);
@@ -209,7 +209,7 @@ version IDevice::getVersion()
 void IDevice::reset()
 {
     // Use INFO level such that we always record this message
-    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"), "Sending reset request to the firmware");
+    RCLCPP_INFO_STREAM(rclcpp::get_logger("device_interface"), "Sending reset request to the firmware");
     queryDevice(message::Query::Reset);
 }
 
