@@ -12,18 +12,35 @@ endif()
 
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(rclcpp_components REQUIRED)
 find_package(camera_trigger_msgs REQUIRED)
 
 include_directories(include)
 
-add_executable(
-  camera_trigger_node src/main.cpp src/camera_trigger_node.cpp
-                      src/device_interface.cpp src/hid_device_interface.cpp)
+add_library(
+  camera_trigger_node_component SHARED
+  src/camera_trigger_node.cpp src/device_interface.cpp
+  src/hid_device_interface.cpp)
 
-target_link_libraries(camera_trigger_node hidapi-libusb ${rclcpp_LIBRARIES})
+target_link_libraries(camera_trigger_node_component hidapi-libusb
+                      ${rclcpp_LIBRARIES})
 
-ament_target_dependencies(camera_trigger_node rclcpp camera_trigger_msgs)
+rclcpp_components_register_node(
+  camera_trigger_node_component PLUGIN "av_camera_trigger::CameraTriggerNode"
+  EXECUTABLE camera_trigger)
 
-install(TARGETS camera_trigger_node DESTINATION lib/${PROJECT_NAME})
+ament_target_dependencies(camera_trigger_node_component camera_trigger_msgs
+                          rclcpp rclcpp_components)
+
+ament_export_targets(export_camera_trigger_node_component)
+install(
+  TARGETS camera_trigger_node_component
+  EXPORT export_camera_trigger_node_component
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin)
+
+install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY config DESTINATION share/${PROJECT_NAME})
 
 ament_package()

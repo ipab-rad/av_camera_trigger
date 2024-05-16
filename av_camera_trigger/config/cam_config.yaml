@@ -1,0 +1,10 @@
+/**:
+  ros__parameters:
+    frame_rate: 10
+    shot_lead_delay_us: 0
+    pps_active_low: false
+    firmware_serial_device: '/dev/ttyACM0'
+    firmware_log_file_path: '/home/ros/logs/camera_trigger_firmware.log'
+    cameras: [fsp_l, lspf_r, rspf_l, lspr_l, rspr_r, rsp_l]
+    ports: [12, 7, 8, 2, 1, 4]
+    topics: [front_stereo/left, left_stereo_front/right, right_stereo_front/left, left_stereo_rear/left, right_stereo_rear/right, right_stereo_rear/right]

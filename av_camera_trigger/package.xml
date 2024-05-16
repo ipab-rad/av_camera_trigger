@@ -11,7 +11,7 @@
 
   <depend>camera_trigger_msgs</depend>
   <depend>rclcpp</depend>
-  <depend>std_msgs</depend>
+  <depend>rclcpp_components</depend>
 
   <export>
     <build_type>ament_cmake</build_type>

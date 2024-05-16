@@ -1,6 +1,6 @@
 
 #include "av_camera_trigger/device_interface.hpp"
-#include "av_camera_trigger/camera_trigger_messaging.h"
+#include "av_camera_trigger/camera_trigger_messaging.hpp"
 #include "av_camera_trigger/Exceptions.hpp"
 
 #include <rclcpp/logging.hpp>

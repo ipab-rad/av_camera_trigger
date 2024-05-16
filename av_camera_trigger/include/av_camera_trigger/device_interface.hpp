@@ -8,7 +8,7 @@
 #include <cmath>
 #include <chrono>
 
-#include "av_camera_trigger/camera_trigger_messaging.h"
+#include "av_camera_trigger/camera_trigger_messaging.hpp"
 
 #ifdef major
 #undef major

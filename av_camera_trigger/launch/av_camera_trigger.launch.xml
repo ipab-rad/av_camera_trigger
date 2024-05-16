@@ -1,0 +1,11 @@
+<launch>
+  <group>
+    <push-ros-namespace namespace="camera_trigger"/>
+    <set_env name="RCUTILS_COLORIZED_OUTPUT" value="1"/>
+    <node_container pkg="rclcpp_components" exec="component_container" name="camera_trigger_container" namespace="">
+      <composable_node pkg="av_camera_trigger" plugin="av_camera_trigger::CameraTriggerNode" name="camera_trigger_node" namespace="">
+        <param from="$(find-pkg-share av_camera_trigger)/config/cam_config.yaml"/>
+      </composable_node>
+    </node_container>
+  </group>
+</launch>

@@ -1,14 +1,16 @@
 #include "av_camera_trigger/camera_trigger_node.hpp"
 
-
-CameraTriggerNode::CameraTriggerNode() : Node("camera_trigger_node"),
+namespace av_camera_trigger
+{
+CameraTriggerNode::CameraTriggerNode(const rclcpp::NodeOptions & options) : Node("camera_trigger_node", options),
     m_triggerDevice{std::make_shared<HIDDevice>(constants::VENDOR_ID,
                                                 constants::PRODUCT_ID)}
 {
     RCLCPP_INFO(this->get_logger(), "Camera Trigger Node startup");
-    this->loadParams();
-    if (this->connectToFirmware())
+
+    if (this->loadParams() and this->connectToFirmware())
     {
+        this->synchFirmwareTime();
         this->attachCameras();
         this->printTimeOffset();
     }
@@ -26,21 +28,15 @@ void CameraTriggerNode::attachCameras()
     RCLCPP_INFO(this->get_logger(),  "Detaching all cameras ...");
     m_triggerDevice->detachCameras();
 
-    int camera_framerate = m_frameRate;
-    int camera_portnumber = 0;
-    std::string camera_alias = "RSPR_L";
-    m_triggerDevice->attachCamera(camera_framerate, camera_portnumber, camera_alias);
-    RCLCPP_INFO_STREAM(this->get_logger(),
-        "Camera identified by alias " << camera_alias <<
-        " on connector " << camera_portnumber << " has been attached");
-    // for (const auto& camera : getAttachedCameras())
-    // {
-    //     m_triggerDevice->attachCamera(camera.framerate,
-    //                                   camera.portNumber,
-    //                                   camera.alias);
-    //     NODELET_INFO_STREAM("Camera identified by alias " << camera.alias <<
-    //                         " on connector " << camera.portNumber << " has been attached");
-    // }
+    for (auto& camera : m_cameras)
+    {
+        m_triggerDevice->attachCamera(camera.framerate,
+                                      camera.portNumber,
+                                      camera.alias);
+        camera.attached = true;
+        RCLCPP_INFO(this->get_logger(),
+            "Camera identified by alias %s on connector %li has been attached", camera.alias.c_str(), camera.portNumber);
+    }
 
     RCLCPP_INFO(this->get_logger(),  "Firmware is starting all attached cameras...");
     m_triggerDevice->startCameras();
@@ -67,14 +63,14 @@ bool CameraTriggerNode::connectToFirmware()
 
 std::chrono::nanoseconds CameraTriggerNode::getTimeOffset()
 {
-    // get current system time
     using namespace std::chrono;
     const auto initialTime = system_clock::now();
     const nanoseconds deviceTime = m_triggerDevice->getDeviceTime();
     const auto currentTime = system_clock::now();
 
     const nanoseconds sendDuration = (currentTime - initialTime) / 2;
-    const nanoseconds offset = (initialTime.time_since_epoch() - deviceTime) - sendDuration;
+    const nanoseconds offset =
+        (initialTime.time_since_epoch() - deviceTime) - sendDuration;
 
     return offset;
 }
@@ -96,64 +92,114 @@ const std::string& CameraTriggerNode::description(const rclcpp::Duration& offset
     return s;
 }
 
-void CameraTriggerNode::loadParams()
+bool CameraTriggerNode::loadParams()
 {
-    // try
-    // {
-        // XmlRpc::XmlRpcValue paramList;
-        // ros::param::get("~camera_params", paramList);
+    m_frameRate = this->declare_parameter("frame_rate", 15);
 
-        // if (paramList.getType() != XmlRpc::XmlRpcValue::Type::TypeArray)
-        // {
-        //     throw XmlRpc::XmlRpcException{"Wrong camera_params type"};
-        // }
+    const auto cams = this->declare_parameter(
+        "cameras", std::vector<std::string>({}));
+    const auto ports = this->declare_parameter(
+        "ports", std::vector<int>({}));
+    const auto topics = this->declare_parameter(
+        "topics", std::vector<std::string>({}));
 
-        m_frameRate = this->declare_parameter("~frame_rate", 15);
-        // for (unsigned int i = 0; i < paramList.size(); i++)
-        // {
-        // //     XmlRpc::XmlRpcValue& rpcValue = paramList[i];
+    // If parameters loaded and correctly formatted, store in structs
+    if ((cams.size() != 0) and
+        (cams.size() == ports.size() and ports.size() == topics.size()))
+    {
+        for (unsigned int i = 0; i < cams.size(); i++)
+        {
+            const std::string full_topic =
+            "/sensor/camera/" + topics[i] + "/trigger";
+            m_cameras.push_back(
+                {full_topic, m_frameRate, ports[i], cams[i], false}
+                );
+        }
+        RCLCPP_INFO(this->get_logger(),
+            "Camera parameters loaded correctly");
+    }
+    else
+    {
+        RCLCPP_ERROR(this->get_logger(),
+            "Cameras incorrectly parameterised");
+        return false;
+    }
 
-        // //     const auto attach = getValue<bool>(rpcValue, "attach");
-        // //     const auto topic = getValue<std::string>(rpcValue, "topic");
-        // //     const auto portNumber = getValue<int>(rpcValue, "port_number");
-        // //     const auto cameraAlias = getValue<std::string>(rpcValue, "camera_alias");
+    using namespace std::chrono;
+    constexpr auto expectedPeriod =
+        milliseconds(1000) / constants::LOOP_RATE;
+    const auto period = milliseconds{1000} / m_frameRate;
+    //75% of the frame rate period
+    m_maxFirmwareQueryPeriod = period * 3 / 4;
 
-        //     m_cameras.push_back({topic, m_frameRate, portNumber, cameraAlias, attach});
+    RCLCPP_INFO_STREAM(this->get_logger(),
+        "Expected firmware query period " <<
+        expectedPeriod.count() << " ms");
+    RCLCPP_INFO_STREAM(this->get_logger(),
+        "Max allowed firmware query period " <<
+        m_maxFirmwareQueryPeriod.count() << " ms");
 
-        //     RCLCPP_INFO_STREAM(this->get_logger(), "Camera " << cameraAlias << ": "
-        //                         << "connector: " << portNumber
-        //                         << ", frame rate: " << m_frameRate
-        //                         << ", topic: " << topic);
-        // }
+    m_applyTimeCorrection = this->declare_parameter(
+        "apply_time_correction", false);
+    RCLCPP_INFO_STREAM(this->get_logger(),
+        "Time correction is " <<
+        (m_applyTimeCorrection ? "ENABLED" : "disabled"));
 
-        using namespace std::chrono;
-        constexpr auto expectedPeriod = milliseconds(1000) / constants::LOOP_RATE;
-        const auto period = milliseconds{1000} / m_frameRate;
-        m_maxFirmwareQueryPeriod = period * 3 / 4; //75% of the frame rate period
-        RCLCPP_INFO_STREAM(this->get_logger(), "Expected firmware query period " << expectedPeriod.count() << " ms");
-        RCLCPP_INFO_STREAM(this->get_logger(), "Max allowed firmware query period " << m_maxFirmwareQueryPeriod.count() << " ms");
+    m_monitorTimeOffset = this->declare_parameter("monitor_fw_host_time_offset", true);
+    RCLCPP_INFO_STREAM(this->get_logger(),
+        "Time offset monitoring between host and firmware is " <<
+        (m_monitorTimeOffset ? "ENABLED" : "disabled"));
 
-        m_applyTimeCorrection = this->declare_parameter("~apply_time_correction", false);
-        RCLCPP_INFO_STREAM(this->get_logger(), "Time correction is " << (m_applyTimeCorrection ? "ENABLED" : "disabled"));
+    m_firmwareSerialDevice = this->declare_parameter(
+        "firmware_serial_device", std::string("/dev/ttyACM0"));
+    RCLCPP_INFO_STREAM(this->get_logger(),
+        "Firmware logs will be read from " << m_firmwareSerialDevice);
 
-        m_monitorTimeOffset = this->declare_parameter("~monitor_fw_host_time_offset", true);
-        RCLCPP_INFO_STREAM(this->get_logger(), "Time offset monitoring between host and firmware is " << (m_monitorTimeOffset ? "ENABLED" : "disabled"));
+    m_firmwareLogFilePath = this->declare_parameter(
+        "firmware_log_file_path",
+        std::string("/tmp/camera_trigger_firmware.log"));
+    RCLCPP_INFO_STREAM(this->get_logger(),
+        "Firmware logs will be written to " << m_firmwareLogFilePath);
 
-        m_firmwareSerialDevice = this->declare_parameter("~firmware_serial_device", std::string("/dev/ttyACM0"));
-        RCLCPP_INFO_STREAM(this->get_logger(), "Firmware logs will be read from " << m_firmwareSerialDevice);
-        m_firmwareLogFilePath = this->declare_parameter("~firmware_log_file_path", std::string("/tmp/camera_trigger_firmware.log"));
-        RCLCPP_INFO_STREAM(this->get_logger(), "Firmware logs will be written to " << m_firmwareLogFilePath);
-    // }
-    // catch (const XmlRpc::XmlRpcException& ex)
-    // {
-    //     RCLCPP_ERROR_STREAM(this->get_logger(), "Error whilst loading parameters: " << ex.getMessage());
-    //     throw node::Error{ErrorCode::ConfigError};
-    // }
+    return true;
 }
 
 
 void CameraTriggerNode::printTimeOffset()
 {
     rclcpp::Duration m_offset(getTimeOffset());
-    RCLCPP_INFO_STREAM(this->get_logger(), "Clocks status: " << this->description(m_offset) << " by " << std::abs(m_offset.nanoseconds()) << " ns");
+    RCLCPP_INFO_STREAM(this->get_logger(),
+        "Clocks status: " << this->description(m_offset) <<
+        " by " << std::abs(m_offset.nanoseconds()) << " ns");
 }
+
+bool CameraTriggerNode::synchFirmwareTime()
+{
+    RCLCPP_INFO(this->get_logger(), "Syncing time between Firmware and Host");
+    try
+    {
+        m_triggerDevice->setDeviceTime(rclcpp::Clock(RCL_ROS_TIME).now().nanoseconds());
+    }
+    catch (...)
+    {
+        RCLCPP_ERROR(this->get_logger(), "Failed to set device time");
+        return (false);
+    }
+
+    time_t diff = std::abs(m_triggerDevice->getDeviceTime().count() / std::nano::den - rclcpp::Clock(RCL_ROS_TIME).now().nanoseconds());
+
+    if (diff < 1)
+    {
+        RCLCPP_INFO_STREAM(this->get_logger(), "Synched! Time diff: " << diff);
+        return true;
+    }
+    else
+    {
+        RCLCPP_ERROR_STREAM(this->get_logger(), "Not synched! Time diff: " << diff);
+        return false;
+    }
+}
+}  // namespace av_camera_trigger
+
+#include <rclcpp_components/register_node_macro.hpp>
+RCLCPP_COMPONENTS_REGISTER_NODE(av_camera_trigger::CameraTriggerNode)

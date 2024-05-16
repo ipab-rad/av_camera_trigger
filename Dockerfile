@@ -70,4 +70,4 @@ RUN sed --in-place --expression \
       /ros_entrypoint.sh
 
 # launch ros package
-CMD ["ros2", "run", "av_camera_trigger", "camera_trigger_node"]
+CMD ["ros2", "launch", "av_camera_trigger", "av_camera_trigger.launch.xml"]

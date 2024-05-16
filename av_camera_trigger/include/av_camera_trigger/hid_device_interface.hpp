@@ -2,7 +2,7 @@
 
 #include "hidapi/hidapi.h"
 #include "device_interface.hpp"
-#include "camera_trigger_messaging.h"
+#include "camera_trigger_messaging.hpp"
 #include "Exceptions.hpp"
 
 #include <chrono>
