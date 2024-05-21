@@ -13,11 +13,24 @@ RUN apt-get update \
         apt-get -y --quiet --no-install-recommends install \
         libhidapi-dev \
         libboost-all-dev \
+        # Install Cyclone DDS ROS RMW
+        ros-"$ROS_DISTRO"-rmw-cyclonedds-cpp \
     && rm -rf /var/lib/apt/lists/*
 
 # Setup ROS workspace folder
 ENV ROS_WS /opt/ros_ws
 WORKDIR $ROS_WS
+
+# Set cyclone DDS ROS RMW
+ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+
+COPY ./cyclone_dds.xml $ROS_WS/
+
+# Configure Cyclone cfg file
+ENV CYCLONEDDS_URI=file://${ROS_WS}/cyclone_dds.xml
+
+# Enable ROS log colorised output
+ENV RCUTILS_COLORIZED_OUTPUT=1
 
 # -----------------------------------------------------------------------
 
