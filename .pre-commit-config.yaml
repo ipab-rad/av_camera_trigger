@@ -82,11 +82,6 @@ repos:
         language: system
         files: CMakeLists\.txt$
 
-  - repo: https://github.com/cheshirekow/cmake-format-precommit
-    rev: v0.6.13
-    hooks:
-      - id: cmake-format
-
   # Docs - RestructuredText hooks
   - repo: https://github.com/PyCQA/doc8
     rev: v1.1.1
