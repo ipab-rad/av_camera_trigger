@@ -178,7 +178,8 @@ bool CameraTriggerNode::synchFirmwareTime()
     RCLCPP_INFO(this->get_logger(), "Syncing time between Firmware and Host");
     try
     {
-        m_triggerDevice->setDeviceTime(rclcpp::Clock(RCL_ROS_TIME).now().nanoseconds());
+        time_t now = time(nullptr);
+        m_triggerDevice->setDeviceTime(now);
     }
     catch (...)
     {
@@ -186,7 +187,9 @@ bool CameraTriggerNode::synchFirmwareTime()
         return (false);
     }
 
-    time_t diff = std::abs(m_triggerDevice->getDeviceTime().count() / std::nano::den - rclcpp::Clock(RCL_ROS_TIME).now().nanoseconds());
+    time_t now = time(nullptr);
+    const auto device_time = m_triggerDevice->getDeviceTime().count() / std::nano::den;
+    time_t diff = std::abs(device_time - now);
 
     if (diff < 1)
     {
