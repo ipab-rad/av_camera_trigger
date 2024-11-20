@@ -2,8 +2,8 @@
 Changelog for package camera_trigger_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.0 (2024-11-20)
+------------------
 * Fix host - trigger device time synchronisation (`#3 <https://github.com/ipab-rad/av_camera_trigger/issues/3>`_)
   -Pass ctime in seconds to trigger device rather than rostime nanoseconds
 * Contributors: Hector Cruz
