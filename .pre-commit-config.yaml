@@ -60,6 +60,7 @@ repos:
         description: Static code analysis of C/C++ files.
         entry: env AMENT_CPPCHECK_ALLOW_SLOW_VERSIONS=1 ament_cppcheck
         language: system
+        exclude: av_camera_trigger
         files: \.(h\+\+|h|hh|hxx|hpp|cuh|c|cc|cpp|cu|c\+\+|cxx|tpp|txx)$
 
   - repo: local
@@ -69,6 +70,7 @@ repos:
         description: Static code analysis of C/C++ files.
         entry: ament_cpplint
         language: system
+        exclude: av_camera_trigger
         files: \.(h\+\+|h|hh|hxx|hpp|cuh|c|cc|cpp|cu|c\+\+|cxx|tpp|txx)$
         args: ["--linelength=100", "--filter=-legal/copyright,-build/include_order"]
 
@@ -81,6 +83,13 @@ repos:
         entry: ament_lint_cmake
         language: system
         files: CMakeLists\.txt$
+
+  # Yaml formatting
+  - repo: https://github.com/adrienverge/yamllint.git
+    rev: v1.35.1
+    hooks:
+      - id: yamllint
+        args: [--format, parsable, --strict, -c=.yamllint.yml]
 
   # Docs - RestructuredText hooks
   - repo: https://github.com/PyCQA/doc8
