@@ -2,6 +2,17 @@
 Changelog for package camera_trigger_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Set frame rate to 20 fps
+ - Previously, the trigger was set to 40 fps, but it was later discovered that 
+   the camera was configured to the wrong triggering GPIO, causing the camera FPS to 
+   operate at half the defined value. The updated ROS camera driver now ensures 
+   the camera FPS is consistent with the trigger frame rate, removing the need to 
+   compensate by setting the frame rate to double the desired triggering FPS.
+
+* Contributors: hect95
+
 1.1.0 (2024-11-20)
 ------------------
 * Fix host - trigger device time synchronisation (`#3 <https://github.com/ipab-rad/av_camera_trigger/issues/3>`_)
