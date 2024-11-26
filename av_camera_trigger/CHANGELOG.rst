@@ -2,8 +2,8 @@
 Changelog for package av_camera_trigger
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.0 (2024-11-26)
+------------------
 * Set frame rate to 20 fps
  - Previously, the trigger was set to 40 fps, but it was later discovered that 
    the camera was configured to the wrong triggering GPIO, causing the camera FPS to 
